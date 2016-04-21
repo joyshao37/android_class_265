@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -16,6 +18,10 @@ public class MainActivity extends AppCompatActivity {
     EditText editText;
     RadioGroup radioGroup;
     String sex = "Male";
+    String selectedSex = "Male";
+
+    String name = "";
+    CheckBox checkBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         textView = (TextView)findViewById(R.id.textView);
         editText = (EditText)findViewById(R.id.editText);
         radioGroup = (RadioGroup)findViewById(R.id.radioGroup);
-
+        checkBox = (CheckBox)findViewById(R.id.hidecheckBox);
         //interface
         editText.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -56,16 +62,25 @@ public class MainActivity extends AppCompatActivity {
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId==R.id.maleradioButton)
-                {
-                    sex="Male";
+                if (checkedId == R.id.maleradioButton) {
+                    selectedSex = "Male";
+
+                } else if (checkedId == R.id.femaleradioButton) {
+
+                    selectedSex = "Female";
 
                 }
-                else if (checkedId==R.id.femaleradioButton){
+            }
+        });
 
-                    sex="Female";
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
 
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(name != ""){
+                    changeTextView();
                 }
+
             }
         });
 
@@ -74,10 +89,25 @@ public class MainActivity extends AppCompatActivity {
 
     public void click(View view)
     {
-        String text = editText.getText().toString();
-        text = text + " sex:" + sex;
-        textView.setText(text);
+        name = editText.getText().toString();
+        sex = selectedSex;
+        changeTextView();
         editText.setText("");
+    }
+
+    public void changeTextView(){
+
+        if (checkBox.isChecked()){
+
+            String text = name;
+            textView.setText(text);
+        }
+        else
+        {
+            String text = name + " sex:" + sex;
+            textView.setText(text);
+        }
+
     }
 
 
