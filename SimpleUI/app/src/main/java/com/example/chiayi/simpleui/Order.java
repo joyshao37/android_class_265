@@ -9,7 +9,7 @@ import io.realm.RealmObject;
 //RealmObject 可以存入的物件
 public class Order extends RealmObject {
     private String note;
-    private String drinkName;
+    private String menuResults; //drinkName->menuResults needs migration.
     private String storeInfo;
 
     public String getNote() {
@@ -20,12 +20,12 @@ public class Order extends RealmObject {
         this.note = note;
     }
 
-    public String getDrinkName() {
-        return drinkName;
+    public String getMenuResults() {
+        return menuResults;
     }
 
-    public void setDrinkName(String drinkName) {
-        this.drinkName = drinkName;
+    public void setMenuResults(String menuResults) {
+        this.menuResults = menuResults;
     }
 
     public String getStoreInfo() {

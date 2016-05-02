@@ -13,7 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class DrinkMeActivity extends AppCompatActivity {
+public class DrinkMenuActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,22 +41,23 @@ public class DrinkMeActivity extends AppCompatActivity {
 
     public void done(View view){
 
-
-
-
+            Intent intent = new Intent();
+            intent.putExtra("result",getData().toString());
+            setResult(RESULT_OK,intent);
+            finish();
     }
 
     //蒐集所有data的function
-    public JSONArray getData() throws JSONException {
+    public JSONArray getData(){
 
         LinearLayout rootLinearLayout = (LinearLayout) findViewById(R.id.root);
         JSONArray jsonArray = new JSONArray();
                 //"order":
                 //        [{"name":"black tea"},]
 
-        for(int i = 0; i<=3 ; i++){
+        for(int i = 1; i<=3 ; i++){
 
-            LinearLayout linearLayout = (LinearLayout) rootLinearLayout.getChildAt(i); //拿出要的第n層linear layout
+            LinearLayout linearLayout = (LinearLayout)rootLinearLayout.getChildAt(i); //拿出要的第n層linear layout
             TextView textView = (TextView)linearLayout.getChildAt(0);
             Button mButton = (Button)linearLayout.getChildAt(1);
             Button lButton = (Button)linearLayout.getChildAt(2);
@@ -66,21 +67,15 @@ public class DrinkMeActivity extends AppCompatActivity {
             int m = Integer.parseInt(mButton.getText().toString());
             int l = Integer.parseInt(lButton.getText().toString());
 
-
             JSONObject jsonObject = new JSONObject();
-            try{
-
-                jsonObject.put("name",drinkName); // key-value
+            try {
+                jsonObject.put("name",drinkName);
                 jsonObject.put("m",m);
                 jsonObject.put("l",l);
                 jsonArray.put(jsonObject);
-
-            }
-            catch (JSONException e){
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-
         }
         return jsonArray;
     }
@@ -90,7 +85,7 @@ public class DrinkMeActivity extends AppCompatActivity {
     public void goToMenu(View view){
 
         Intent intent= new Intent(); //Intent應用1:帶到另一個頁面
-        intent.setClass(this,DrinkMeActivity.class);   //找出drinkMeActivity Class
+        intent.setClass(this,DrinkMenuActivity.class);   //找出drinkMeActivity Class
         startActivity(intent);
         Log.d("debug", "DrinkMenuActivity onCreate");
     }

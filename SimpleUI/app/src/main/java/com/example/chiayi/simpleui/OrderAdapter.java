@@ -8,6 +8,10 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 /**
@@ -49,7 +53,7 @@ public class OrderAdapter extends BaseAdapter {
         {
             convertView=inflater.inflate(R.layout.listview_item,null);
             holder = new Holder();
-            holder.drinkName = (TextView)convertView.findViewById(R.id.drinkName);
+            holder.drinkNumber = (TextView)convertView.findViewById(R.id.drinkNumber);
             holder.note = (TextView)convertView.findViewById(R.id.note);
             holder.storeInfo= (TextView)convertView.findViewById(R.id.store);
             convertView.setTag(holder);
@@ -58,19 +62,33 @@ public class OrderAdapter extends BaseAdapter {
             holder=(Holder)convertView.getTag();
         }
 
+        int total = 0;
 
-        holder.drinkName.setText(orders.get(position).getDrinkName());
+        try {
+            JSONArray jsonArray = new JSONArray(orders.get(position).getMenuResults());
+            for (int i=0; i<jsonArray.length();i++)
+            {
+                JSONObject menu = jsonArray.getJSONObject(i);
+                total+=menu.getInt("m");
+                total+=menu.getInt("l");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        holder.drinkNumber.setText(String.valueOf(total));
         holder.note.setText(orders.get(position).getNote());
         holder.storeInfo.setText(orders.get(position).getStoreInfo());
 
 
-        return convertView;   // return convertView 把要的convertview 回傳回去
+        return convertView;   // return convertView 把要的convert view 回傳回去
     }
 
     //  存下UI Component
     public class Holder
     {
-        TextView drinkName;
+        TextView drinkNumber;
         TextView note;
         TextView storeInfo;
 
