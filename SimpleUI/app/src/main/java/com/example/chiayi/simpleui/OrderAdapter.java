@@ -62,6 +62,9 @@ public class OrderAdapter extends BaseAdapter {
             holder=(Holder)convertView.getTag();
         }
 
+
+        //處理key-value那種格式變成別的....
+
         int total = 0;
 
         try {

@@ -18,8 +18,16 @@ import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -54,7 +62,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //decide that the layout of MainActivity is activity_main.xml
-        Log.d("debug","Main Activity OnCreate");
+        Log.d("debug", "Main Activity OnCreate");
+
+        //0505 Parse
+//        ParseObject testObject = new ParseObject("TestObject"); // create table
+//        testObject.put("test", 456);  // create column and its value
+//        testObject.saveInBackground(new SaveCallback() {
+//            @Override
+//            public void done(ParseException e) {
+//                if (e != null) {
+//                    Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+//                } else {
+//                    Toast.makeText(MainActivity.this, "save success", Toast.LENGTH_LONG).show();
+//                }
+//            }
+//        });
+
+
 
         textView = (TextView)findViewById(R.id.textView);
         editText = (EditText)findViewById(R.id.editText);
@@ -68,8 +92,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Create a RealmConfiguration which is to locate Realm file in package's "files" directory.
         RealmConfiguration realmConfig = new RealmConfiguration.Builder(this).deleteRealmIfMigrationNeeded().build(); //add deleteRealmIfMigrationNeeded()
+        Realm.setDefaultConfiguration(realmConfig);
         // Get a Realm instance for this thread
-        realm = Realm.getInstance(realmConfig);
+        realm = Realm.getDefaultInstance();
 
         editText.setText(sp.getString("editText", "")); // 在setting內找editText的定義,可能找不到EditText有點像else的感覺
         //interface
@@ -160,10 +185,44 @@ public class MainActivity extends AppCompatActivity {
 
     void setupListView()
     {
-        RealmResults result=realm.allObjects(Order.class); //allObject回傳RealmResult
 
-        OrderAdapter adapter = new OrderAdapter(this,result.subList(0,result.size()));
-        listview.setAdapter(adapter);
+
+        ParseQuery<ParseObject> query=new ParseQuery<ParseObject>("Order");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+                if (e != null) {
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    Realm realm = Realm.getDefaultInstance();
+
+                    RealmResults result=realm.allObjects(Order.class); //allObject回傳RealmResult
+
+
+                    OrderAdapter adapter = new OrderAdapter(MainActivity.this,result.subList(0,result.size()));
+                    listview.setAdapter(adapter);
+
+                    realm.close();
+                    return;
+                }
+
+                List<Order> orders = new ArrayList<Order>();
+                for (int i = 0; i < objects.size(); i++) {
+                    Order order = new Order();
+                    order.setNote(objects.get(i).getString("note"));
+                    order.setStoreInfo(objects.get(i).getString("storeInfo"));
+                    order.setMenuResults(objects.get(i).getString("menuResults"));
+                    orders.add(order);
+
+                }
+
+
+                OrderAdapter adapter = new OrderAdapter(MainActivity.this, orders);
+                listview.setAdapter(adapter);
+            }//把order弄下來
+        });
+
+
     }
 
 
@@ -174,8 +233,7 @@ public class MainActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
     }
 
-    public void click(View view)
-    {
+    public void click(View view) {
         note = editText.getText().toString();
         String text = note;
         textView.setText(text);
@@ -183,24 +241,27 @@ public class MainActivity extends AppCompatActivity {
         Order order = new Order();
         order.setMenuResults(menuResults);
         order.setNote(note);
-        order.setStoreInfo((String)spinner.getSelectedItem());
+        order.setStoreInfo((String) spinner.getSelectedItem());
+
+        SaveCallbackWithRealm saveCallbackWithRealm = new SaveCallbackWithRealm(order, new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e != null) {
+                    Toast.makeText(MainActivity.this, "Save Fail", Toast.LENGTH_LONG).show();
+                }
+                //存完Object到Parse後再做以下功能
+                editText.setText("");
+                menuResults = "";
+                setupListView();
+            }
+        });
 
 
-        // Persist your data easily
-        realm.beginTransaction();
-        realm.copyToRealm(order);
-        realm.commitTransaction();
-
-        //orders.add(order);
-        //可以刪掉，因為直接和手機內部取值就好
-
-
-
-        editText.setText("");
-        menuResults="";
-        setupListView();
-
+        order.saveToRemote(saveCallbackWithRealm);
     }
+
+
+
 
     public void goToMenu(View view){
 
@@ -254,6 +315,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        realm.close();
         Log.d("debug", "Main Activity OnDestroy");
     }
 
